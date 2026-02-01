@@ -10,7 +10,7 @@ use geo::algorithm::haversine_distance::HaversineDistance;
 use geo::euclidean_length::EuclideanLength;
 use geo_types::{Geometry, Point};
 
-use gpx::{read, Fix};
+use gpx::{errors::GpxError, read, Fix};
 use std::error::Error;
 
 use time::{Date, Month, PrimitiveDateTime, Time};
@@ -24,6 +24,22 @@ fn gpx_reader_read_test_badxml() {
     let result = read(reader);
 
     assert!(result.is_err());
+}
+
+#[test]
+fn gpx_reader_read_unsupported_gpx_version() {
+    let file = File::open("tests/fixtures/unsupported_version.gpx").unwrap();
+    let reader = BufReader::new(file);
+
+    let result = read(reader);
+    let err = result.expect_err("file should not parse");
+
+    // Make sure the error includes the actual version
+    if let GpxError::UnsupportedVersionError(version) = err {
+        assert_eq!(version, "8.0");
+    } else {
+        panic!("unexpected GpxError: {:?}", err);
+    }
 }
 
 #[test]
