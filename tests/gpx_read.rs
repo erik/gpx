@@ -32,13 +32,13 @@ fn gpx_reader_read_unsupported_gpx_version() {
     let reader = BufReader::new(file);
 
     let result = read(reader);
-    let err = result.expect_err("file should not parse");
 
     // Make sure the error includes the actual version
-    if let GpxError::UnsupportedVersionError(version) = err {
-        assert_eq!(version, "8.0");
-    } else {
-        panic!("unexpected GpxError: {:?}", err);
+    match result {
+        Err(GpxError::UnsupportedVersionError(version)) => {
+            assert_eq!(version, "8.0");
+        }
+        _ => panic!("expected UnsupportedVersionError, got: {:?}", result),
     }
 }
 
